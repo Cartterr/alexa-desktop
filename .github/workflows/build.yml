@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Version
         shell: pwsh
@@ -40,7 +40,7 @@ jobs:
           $sums = Get-ChildItem dist -File | ForEach-Object { "$((Get-FileHash $_.FullName).Hash.ToLower())  $($_.Name)" }
           $sums | Set-Content dist\SHA256SUMS.txt
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: AlexaDesktop-${{ env.VERSION }}
           path: dist/*
