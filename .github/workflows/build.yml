@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version
+        shell: pwsh
+        run: |
+          $v = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.0.0' }
+          "VERSION=$v" >> $env:GITHUB_ENV
+
+      - name: Build
+        run: dotnet build src -c Release -o publish -p:Version=${{ env.VERSION }}
+
+      - name: Self-test
+        shell: pwsh
+        run: |
+          $p = Start-Process publish\AlexaDesktop.exe -ArgumentList '--selftest' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "self-test failed" }
+
+      - name: Package
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /DAppVersion=$env:VERSION installer\AlexaDesktop.iss
+          if ($LASTEXITCODE) { throw "installer build failed" }
+          Compress-Archive publish\* dist\AlexaDesktop-$env:VERSION-portable.zip
+          $sums = Get-ChildItem dist -File | ForEach-Object { "$((Get-FileHash $_.FullName).Hash.ToLower())  $($_.Name)" }
+          $sums | Set-Content dist\SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AlexaDesktop-${{ env.VERSION }}
+          path: dist/*
+
+      - name: Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create ${{ github.ref_name }} dist/* --title "Alexa Desktop ${{ env.VERSION }}" --generate-notes

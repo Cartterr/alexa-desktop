@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- .NET Framework 4.8 ships with every Windows 10/11, so users install nothing extra. -->
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>AlexaDesktop</AssemblyName>
+    <RootNamespace>AlexaDesktop</RootNamespace>
+    <ApplicationIcon>..\assets\icon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DebugType>none</DebugType>
+    <Version>0.0.0</Version>
+    <Product>Alexa Desktop</Product>
+    <Description>Unofficial Windows desktop app for Alexa+</Description>
+    <Company>Cartterr</Company>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+    <EmbeddedResource Include="..\assets\icon.ico" LogicalName="icon.ico" />
+  </ItemGroup>
+
+</Project>
