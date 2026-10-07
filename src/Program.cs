@@ -31,6 +31,9 @@ namespace AlexaDesktop
                 return 0;
             }
 
+            // Lets installer upgrades (and crash recovery) bring the app back, into the tray.
+            Native.RegisterApplicationRestart("--background", 0);
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm(showSignal, startHidden: args.Contains("--background")));
@@ -330,5 +333,6 @@ namespace AlexaDesktop
         [DllImport("user32.dll")] public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
         [DllImport("user32.dll")] public static extern bool AllowSetForegroundWindow(int dwProcessId);
         [DllImport("dwmapi.dll")] public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] public static extern int RegisterApplicationRestart(string commandLine, int flags);
     }
 }
