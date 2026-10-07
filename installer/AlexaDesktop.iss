@@ -44,7 +44,9 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 Root: HKCU; Subkey: "Software\AlexaDesktop"; ValueType: none; Flags: uninsdeletekey
 
 [Run]
-Filename: "{app}\AlexaDesktop.exe"; Description: "{cm:LaunchProgram,Alexa Desktop}"; Flags: nowait postinstall skipifsilent
+; Upgrades close the running app; put it back in the tray. (Restart Manager won't relaunch it.)
+Filename: "{app}\AlexaDesktop.exe"; Parameters: "--background"; Flags: nowait runasoriginaluser; Check: AppWasRunning
+Filename: "{app}\AlexaDesktop.exe"; Description: "{cm:LaunchProgram,Alexa Desktop}"; Flags: nowait postinstall skipifsilent runasoriginaluser
 
 [UninstallRun]
 Filename: "{cmd}"; Parameters: "/c taskkill /im AlexaDesktop.exe /f"; Flags: runhidden; RunOnceId: "StopApp"
@@ -52,3 +54,19 @@ Filename: "{cmd}"; Parameters: "/c taskkill /im AlexaDesktop.exe /f"; Flags: run
 [UninstallDelete]
 ; Sign-in cookies and cache.
 Type: filesandordirs; Name: "{localappdata}\AlexaDesktop"
+
+[Code]
+var
+  WasRunning: Boolean;
+
+function InitializeSetup(): Boolean;
+begin
+  // The app holds this mutex while it runs (see Program.cs).
+  WasRunning := CheckForMutexes('Local\AlexaDesktop.Instance');
+  Result := True;
+end;
+
+function AppWasRunning(): Boolean;
+begin
+  Result := WasRunning;
+end;
